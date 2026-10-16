@@ -148,7 +148,7 @@ Dentro de `docs.conf` pegamos:
 ```
 server {
     listen 80;
-    server_name docs.local;
+    server_name localhost;
 
     root /var/www/docs;
     index index.html;
@@ -326,4 +326,22 @@ sudo systemctl reload nginx
 ```
 nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
+
+### 5. Comprobar que ambos sitios funcionan de forma independiente
+
+Verificaremos que cada URL sirve su propio contenido en el mismo NGINX:
+
+```
+curl -s http://localhost/ | grep -m1 -i "<title>"
+curl -s -H "Host: blog.local" http://localhost/ | grep -m1 -i "<title>"
+```
+
+Los dos `<title>` deben ser distintos: el de la documentación y el del blog. Para abrir el blog en el navegador, añadiremos `127.0.0.1 blog.local` a `/etc/hosts` y visitaremos `http://blog.local`; la documentación sigue en `http://localhost`.
+
+**Resultado:**
+
+```
+<title>Get started - Documentation</title>
+<title>Mi primera entrada | Mi blog personal sobre desarrollo web.</title>
 ```
