@@ -11,11 +11,7 @@ site_name = "Documentation"
 # edit_uri = "edit/main/docs/"
 
 nav = [
-  { "Get started" = "index.md" },
-  { "Markdown in 5min" = "markdown.md" },
-  { "Obtener site" = "get-site.md" },
-  { "Using Git & Github" = "trabajando-con-git.md" },
-  { "Tema Visual" = "tema-visual.md" },
+  { "NGINX" = "index.md" },
 ]
 
 # extra_css = ["stylesheets/extra.css"]
