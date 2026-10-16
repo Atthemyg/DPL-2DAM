@@ -247,7 +247,6 @@ author: Alumno
  y añadiremos al menos una entrada propia en `blog/_posts/` con el formato `AAAA-MM-DD-titulo.md`:
 
 ```
-
 ---
 layout: post
 title: "Mi primera entrada"
@@ -342,14 +341,15 @@ Los dos `<title>` deben ser distintos: el de la documentación y el del blog. Pa
 
 **Resultado:**
 
-```
+```text
 <title>Get started - Documentation</title>
 <title>Mi primera entrada | Mi blog personal sobre desarrollo web.</title>
 ```
 
+
 ---
 
-## Actualizar o eliminar contenido de la documentación
+## Actualizar o eliminar contenido de la documentación en Zensical
 
 Cuando se quita una página de la documentación no basta con borrar el fichero Markdown. El contenido vive en tres sitios a la vez, y cada uno hay que actualizarlo:
 
@@ -395,6 +395,18 @@ sudo chown -R www-data:www-data /var/www/docs
 - `cp -r site/. /var/www/docs/` copia el sitio nuevo. La barra y el punto (`/.`) copian también los ficheros ocultos y evitan crear una subcarpeta `site` dentro del destino.
 - `chown -R www-data:www-data` devuelve la propiedad al usuario con el que se ejecuta NGINX. Los ficheros copiados con `sudo` pertenecen a `root`, y sin este paso NGINX podría responder con un error 403.
 
+<br>
+
+**Bloque de comandos completos:**
+
+```bash
+rm -rf site
+uv run zensical build
+sudo rm -rf /var/www/docs/*
+sudo cp -r site/. /var/www/docs/
+sudo chown -R www-data:www-data /var/www/docs
+```
+
 ### 4. Comprobación
 
 ```bash
@@ -434,3 +446,137 @@ Connection: keep-alive
 ```
 
 Si el navegador sigue mostrando la versión anterior, se recarga sin caché con `Ctrl+Shift+R`, porque el tema de Zensical usa navegación instantánea y puede conservar páginas ya visitadas.
+
+---
+
+## Zensical final:
+
+![](img/Zensical.png)
+
+<br>
+
+---
+
+## Actualizar o eliminar contenido del blog en Jekyll
+
+Cuando se quita una entrada del blog no basta con borrar su fichero. El contenido vive en tres sitios a la vez, y cada uno hay que actualizarlo:
+
+| Dónde | Qué contiene | Ruta |
+|-------|--------------|------|
+| Repositorio | Las entradas y páginas originales en Markdown | `blog/_posts/` y `blog/*.markdown` |
+| Sitio generado | El HTML que crea Jekyll | `blog/_site/` |
+| NGINX | La copia que ve el navegador | `/var/www/blog/` |
+
+Si solo se borra el Markdown, la web no cambia: `_site/` y `/var/www/blog/` conservan las páginas antiguas. Por eso el proceso se hace en tres pasos.
+
+### 1. Quitar la entrada del repositorio
+
+Las entradas son los ficheros de `blog/_posts/`, con el formato `AAAA-MM-DD-titulo.markdown`. Para eliminar una:
+
+```bash
+git rm blog/_posts/2026-10-16-welcome-to-jekyll.markdown
+```
+
+Jekyll construye la portada y la página recorriendo todas las entradas, así que al borrar el fichero desaparecen solas de ambas listas y no hay que tocar nada más.
+
+Si lo que se elimina es una **página** (por ejemplo `bienvenido.markdown`) en lugar de una entrada, también hay que quitarla del menú superior, que se define en la sección `header_pages` de `_config.yml`:
+
+```yaml
+header_pages:
+  - about.markdown
+  # - bienvenido.markdown   <- línea eliminada
+```
+
+Conviene revisar además si otras entradas enlazan a la que se ha borrado, porque esos enlaces quedarían rotos.
+
+Al **añadir** una entrada nueva se crea el fichero con el mismo formato de nombre y su cabecera (`layout`, `title`, `date`...). La fecha no puede ser posterior a hoy, porque Jekyll no publica las entradas con fecha futura.
+
+### 2. Regenerar el sitio desde cero
+
+```bash
+cd blog
+rm -rf _site .jekyll-cache
+bundle exec jekyll build
+cd ..
+```
+
+Jekyll normalmente limpia de `_site/` lo que ya no genera, pero se borra la carpeta y la caché (`.jekyll-cache`) para partir de cero y asegurarse de que `_site/` refleja exactamente el contenido actual de `blog/`.
+
+### 3. Vaciar y volver a publicar en NGINX
+
+```bash
+sudo rm -rf /var/www/blog/*
+sudo cp -r blog/_site/. /var/www/blog/
+sudo chown -R www-data:www-data /var/www/blog
+```
+
+- `rm -rf /var/www/blog/*` vacía la carpeta que sirve NGINX, porque `cp -r` solo añade y sobrescribe ficheros, nunca elimina los que ya no existen. Sin este paso, las entradas borradas seguirían accesibles desde el navegador.
+- `cp -r blog/_site/. /var/www/blog/` copia el sitio nuevo. La barra y el punto (`/.`) copian también los ficheros ocultos y evitan crear una subcarpeta `_site` dentro del destino.
+- `chown -R www-data:www-data` devuelve la propiedad al usuario con el que se ejecuta NGINX. Los ficheros copiados con `sudo` pertenecen a `root`, y sin este paso NGINX podría responder con un error 403.
+
+<br>
+
+**Bloque de comandos completos:**
+
+```bash
+cd blog
+rm -rf _site .jekyll-cache
+bundle exec jekyll build
+cd ..
+sudo rm -rf /var/www/blog/*
+sudo cp -r blog/_site/. /var/www/blog/
+sudo chown -R www-data:www-data /var/www/blog
+```
+
+### 4. Comprobación
+
+```bash
+ls /var/www/blog
+curl -I -H "Host: blog.local" http://localhost
+```
+
+**Resultado:**
+
+```text
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 16 Oct 2026 23:16:41 GMT
+Content-Type: text/html
+Content-Length: 7390
+Last-Modified: Fri, 16 Oct 2026 23:16:33 GMT
+Connection: keep-alive
+ETag: "6ad2b051-1cde"
+Accept-Ranges: bytes
+```
+
+Para confirmar que una entrada eliminada ya no existe, se pide su dirección y debe devolver un 404:
+
+```bash
+curl -I -H "Host: blog.local" http://localhost/resenas/2026/10/08/1984-george-orwell.html
+```
+
+**Resultado:**
+
+```text
+HTTP/1.1 404 Not Found
+Server: nginx
+Date: Fri, 16 Oct 2026 23:17:02 GMT
+Content-Type: text/html
+Content-Length: 146
+Connection: keep-alive
+```
+
+También se puede comprobar que su título ya no aparece en la portada (debe devolver `0`):
+
+```bash
+curl -s -H "Host: blog.local" http://localhost/ | grep -ci "Welcome"
+```
+
+
+Si el navegador sigue mostrando la versión anterior, se recarga sin caché con `Ctrl+Shift+R`.
+
+---
+
+## Blog final:
+
+![](img/Blog.png)

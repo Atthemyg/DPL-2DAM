@@ -449,10 +449,13 @@ Si el navegador sigue mostrando la versión anterior, se recarga sin caché con 
 
 ---
 
-## Zensical final
+## Zensical final:
 
 ![](img/Zensical.png)
 
+<br>
+
+---
 
 ## Actualizar o eliminar contenido del blog en Jekyll
 
@@ -574,6 +577,6 @@ Si el navegador sigue mostrando la versión anterior, se recarga sin caché con 
 
 ---
 
-## Blog final
+## Blog final:
 
 ![](img/Blog.png)
