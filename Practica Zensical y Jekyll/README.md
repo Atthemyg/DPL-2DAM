@@ -183,8 +183,75 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 
 ### 6. Comprobar el acceso a la documentación
 
-Solo nos falta verificar que la documentación se sirve correctamente desde NGINX accediendo a `http://localhost`:
+Solo nos falta verificar que la documentación se sirve correctamente desde NGINX:
 
 ```
 curl -I http://localhost
+```
+**Resultado:**
+
+```
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 16 Oct 2026 11:20:55 GMT
+Content-Type: text/html
+Content-Length: 33157
+Last-Modified: Fri, 16 Oct 2026 11:00:41 GMT
+Connection: keep-alive
+ETag: "6ad203d9-8185"
+Accept-Ranges: bytes
+```
+
+Con este último paso, ya podremos ver la documentación generada con Zensical y servida por NGINX al abrir `http://localhost` en nuestro navegador. 
+
+---
+
+## Fase 2. Despliegue de un blog personal con Jekyll
+
+### 1. Instalar Jekyll
+
+Debemos de instalar Ruby y Jekyll para poder construir el blog:
+
+```
+sudo apt install -y ruby-full build-essential zlib1g-dev
+sudo gem install jekyll bundler
+jekyll -v
+```
+
+**Resultado:**
+
+```
+jekyll 4.4.1
+```
+
+### 2. Crear el blog
+
+Con Jekyll se puede generar un blog completo con un solo comando, que incluye la configuración, el tema por defecto, la página de inicio, la página "Acerca de" y una entrada de ejemplo:
+
+```
+jekyll new blog
+cd blog
+bundle install
+```
+
+A continuación, personalizaremos `blog/_config.yml` (título, descripción, autor):
+
+```
+title: Mi primer blog
+email: alumno@example.com
+description: >-
+  Mi blog personal sobre desarrollo web.
+author: Alumno
+```
+
+ y añadiremos al menos una entrada propia en `blog/_posts/` con el formato `AAAA-MM-DD-titulo.md`:
+
+```
+---
+layout: post
+title: "Mi primera entrada"
+date: 2026-10-16
+---
+
+Contenido de la entrada.
 ```
