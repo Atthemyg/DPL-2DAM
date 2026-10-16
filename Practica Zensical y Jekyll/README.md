@@ -180,3 +180,11 @@ sudo systemctl reload nginx
 nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
 nginx: configuration file /etc/nginx/nginx.conf test is successful
 ```
+
+### 6. Comprobar el acceso a la documentación
+
+Solo nos falta verificar que la documentación se sirve correctamente desde NGINX accediendo a `http://localhost`:
+
+```
+curl -I http://localhost
+```
