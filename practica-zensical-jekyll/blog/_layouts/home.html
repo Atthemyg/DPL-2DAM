@@ -1,0 +1,34 @@
+---
+layout: default
+---
+
+<div class="home">
+  {{ content }}
+
+  {%- if site.posts.size > 0 -%}
+    <h2 class="post-list-heading" id="ultimas">{{ page.list_title | default: "Entradas" }}</h2>
+    <ul class="cards">
+      {%- for post in site.posts -%}
+      <li class="card">
+        {%- assign date_format = site.minima.date_format | default: "%d/%m/%Y" -%}
+        <span class="card-meta">{{ post.date | date: date_format }}</span>
+        <h3>
+          <a class="post-link" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+        </h3>
+        {%- if post.autor -%}
+          <p class="card-author">{{ post.autor }}</p>
+        {%- endif -%}
+        {%- if site.show_excerpts -%}
+          <p class="card-excerpt">{{ post.excerpt | strip_html | strip | truncatewords: 32 }}</p>
+        {%- endif -%}
+        <div class="card-footer">
+          {%- if post.valoracion -%}<span class="rating">{{ post.valoracion }}</span>{%- endif -%}
+          {%- for tag in post.tags limit: 2 -%}<span class="chip">{{ tag | replace: "-", " " }}</span>{%- endfor -%}
+        </div>
+      </li>
+      {%- endfor -%}
+    </ul>
+
+    <p class="rss-subscribe">Suscríbete <a href="{{ "/feed.xml" | relative_url }}">por RSS</a></p>
+  {%- endif -%}
+</div>
