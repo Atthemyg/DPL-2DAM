@@ -258,7 +258,7 @@ Contenido de la entrada.
 
 ### 3. Generar el sitio del blog
 
-Para construir el sitio estático del blog, primero descargaremos las dependencias necesarias:
+Para construir el sitio estático del blog, debemos descargar las dependencias necesarias:
 
 ```
 bundle install
@@ -275,4 +275,55 @@ ls _site
 cd ..
 ```
 
-Jekyll deja el resultado en `blog/_site/`
+Jekyll deja el resultado en `blog/_site/`.
+
+### 4. Publicar el blog en el mismo NGINX
+
+Añadiremos un segundo `server` al mismo NGINX, de modo que cada sitio se sirva de forma independiente según el nombre de host (`localhost` para la documentación y `blog.local` para el blog).
+
+Primero, copiaremos el sitio generado y ajustaremos permisos:
+
+```
+sudo mkdir -p /var/www/blog
+sudo cp -r blog/_site/. /var/www/blog/
+sudo chown -R www-data:www-data /var/www/blog
+```
+
+Luego, crearemos `nginx/blog.conf` en el repositorio:
+
+```
+cd nginx  # ya está creada
+nano nginx/blog.conf
+```
+
+Dentro de `blog.conf` pegamos:
+
+```
+server {
+    listen 80;
+    server_name blog.local;
+
+    root /var/www/blog;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+```
+
+Por último, instalamos, validamos y recargamos:
+
+```
+sudo cp nginx/blog.conf /etc/nginx/sites-available/blog.conf
+sudo ln -s /etc/nginx/sites-available/blog.conf /etc/nginx/sites-enabled/blog.conf
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+**Resultado:**
+
+```
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
