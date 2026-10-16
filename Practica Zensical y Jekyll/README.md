@@ -38,7 +38,7 @@ ls site
 assets    index.html  search.json  tema-visual
 ```
 
-## 3. Previsualizar el sitio en local
+### 3. Previsualizar el sitio en local
 
 Debemos comprobar que la documentación se ve correctamente antes de publicarla. Para ello, lanzaremos el servidor de desarrollo de Zensical:
 
@@ -70,4 +70,56 @@ Content-Length: 1303
 Content-Type: text/html; charset=utf-8
 Date: Fri, 16 Oct 2026 10:38:37 GMT
 Last-Modified: Fri, 16 Oct 2026 10:37:17 GMT
+```
+
+### 4. Instalar NGINX y verificar el servicio
+
+Ahora instalaremos NGINX en el entorno donde se desplegará la documentación:
+
+```
+sudo apt update
+sudo apt install -y nginx
+nginx -v
+```
+
+Arrancamos el servicio y comprobar que responde:
+
+```
+systemctl enable --now nginx
+systemctl status nginx --no-pager
+```
+
+**Resultado:**
+
+```
+● nginx.service - A high performance web server and a reverse proxy server
+     Loaded: loaded (/usr/lib/systemd/system/nginx.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-10-16 11:49:00 WEST; 55s left
+ Invocation: e75903278a9a4f2db68f5704dab9ff62
+       Docs: man:nginx(8)
+   Main PID: 1148 (nginx)
+      Tasks: 5 (limit: 7325)
+     Memory: 6.4M (peak: 6.9M)
+        CPU: 76ms
+     CGroup: /system.slice/nginx.service
+             ├─1148 "nginx: master process /usr/sbin/nginx -g daemon on; master…
+             ├─1149 "nginx: worker process"
+             ├─1150 "nginx: worker process"
+             ├─1151 "nginx: worker process"
+             └─1152 "nginx: worker process"
+
+```
+
+**Resultado** desde otra terminal con `curl -I http://localhost`:
+
+```
+HTTP/1.1 200 OK
+Server: nginx
+Date: Fri, 16 Oct 2026 10:49:43 GMT
+Content-Type: text/html
+Content-Length: 33157
+Last-Modified: Tue, 13 Oct 2026 10:26:47 GMT
+Connection: keep-alive
+ETag: "6ace0767-8185"
+Accept-Ranges: bytes
 ```
