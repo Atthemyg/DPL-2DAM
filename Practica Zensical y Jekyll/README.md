@@ -123,3 +123,60 @@ Connection: keep-alive
 ETag: "6ace0767-8185"
 Accept-Ranges: bytes
 ```
+
+### 5. Publicar `site/` con NGINX
+
+A continuación, copiaremos el sitio generado a una ruta propia de NGINX y crear un `server` que lo sirva.
+
+Para hacerlo tenemos que copiar el contenido de `site/` a la ruta que servirá NGINX y ajustar permisos:
+
+```
+sudo mkdir -p /var/www/docs
+sudo cp -r site/. /var/www/docs/
+sudo chown -R www-data:www-data /var/www/docs
+```
+
+Y crearemos el fichero de configuración dentro del repositorio, en `nginx/docs.conf`:
+
+```
+mkdir -p nginx
+nano nginx/docs.conf
+```
+
+Dentro de `docs.conf` pegamos:
+
+```
+server {
+    listen 80;
+    server_name docs.local;
+
+    root /var/www/docs;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+```
+
+Hecho esto, lo instalaremos en NGINX con un enlace simbólico, y desactivaremos el sitio por defecto para que no interfiera:
+
+```
+sudo cp nginx/docs.conf /etc/nginx/sites-available/docs.conf
+sudo ln -s /etc/nginx/sites-available/docs.conf /etc/nginx/sites-enabled/docs.conf
+sudo rm -f /etc/nginx/sites-enabled/default
+```
+
+Validamos y recargamos:
+
+```
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+**Resultado:**
+
+```
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+```
