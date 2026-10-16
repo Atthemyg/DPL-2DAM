@@ -255,3 +255,24 @@ date: 2026-10-16
 
 Contenido de la entrada.
 ```
+
+### 3. Generar el sitio del blog
+
+Para construir el sitio estático del blog, primero descargaremos las dependencias necesarias:
+
+```
+bundle install
+bundle config set --local path vendor/bundle   # configura Bundler para instalar las gemas dentro del proyecto
+bundle install
+```
+
+A continuación, creamos el sitio:
+
+```
+cd blog
+bundle exec jekyll build
+ls _site
+cd ..
+```
+
+Jekyll deja el resultado en `blog/_site/`
