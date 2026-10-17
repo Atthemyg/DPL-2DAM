@@ -9,6 +9,12 @@ Primero, nos situamos en la carpeta del proyecto donde tendremos nuestros archiv
 
 Para construir el sitio web estático (HTML, CSS y JavaScript) a partir de los Markdown de `docs/`, ejecutamos el build de Zensical con `uv`.
 
+Antes de construirlo, indicamos en `zensical.toml` que la documentación se publicará bajo la ruta `/zensical/`:
+
+```toml
+site_url = "http://localhost/zensical/"
+```
+
 ```bash
 uv run zensical build
 ``` 
@@ -131,39 +137,41 @@ A continuación, copiaremos el sitio generado a una ruta propia de NGINX y crear
 Para hacerlo tenemos que copiar el contenido de `site/` a la ruta que servirá NGINX y ajustar permisos:
 
 ```bash
-sudo mkdir -p /var/www/docs
-sudo cp -r site/. /var/www/docs/
-sudo chown -R www-data:www-data /var/www/docs
+sudo mkdir -p /var/www/zensical
+sudo cp -r site/. /var/www/zensical/
+sudo chown -R www-data:www-data /var/www/zensical
 ```
 
-Y crearemos el fichero de configuración dentro del repositorio, en `nginx/docs.conf`:
+Y crearemos el fichero de configuración dentro del repositorio, en `nginx/practica.conf`:
 
 ```bash
 mkdir -p nginx
-nano nginx/docs.conf
+nano nginx/practica.conf
 ```
 
-Dentro de `docs.conf` pegamos:
+Dentro de `practica.conf` pegamos:
 
 ```
 server {
     listen 80;
     server_name localhost;
 
-    root /var/www/docs;
-    index index.html;
+    location = /zensical { return 301 /zensical/; }
 
-    location / {
-        try_files $uri $uri/ =404;
+    location /zensical/ {
+        alias /var/www/zensical/;
+        index index.html;
     }
 }
 ```
 
+La documentación se publica en la ruta `/zensical/`. La directiva `alias` indica la carpeta del disco desde la que se sirven los ficheros de esa ruta, y el `location =` redirige `/zensical` a `/zensical/` (con la barra final).
+
 Hecho esto, lo instalaremos en NGINX con un enlace simbólico, y desactivaremos el sitio por defecto para que no interfiera:
 
 ```bash
-sudo cp nginx/docs.conf /etc/nginx/sites-available/docs.conf
-sudo ln -s /etc/nginx/sites-available/docs.conf /etc/nginx/sites-enabled/docs.conf
+sudo cp nginx/practica.conf /etc/nginx/sites-available/practica.conf
+sudo ln -s /etc/nginx/sites-available/practica.conf /etc/nginx/sites-enabled/practica.conf
 sudo rm -f /etc/nginx/sites-enabled/default
 ```
 
@@ -186,7 +194,7 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 Solo nos falta verificar que la documentación se sirve correctamente desde NGINX:
 
 ```bash
-curl -I http://localhost
+curl -I http://localhost/zensical/
 ```
 **Resultado:**
 
@@ -202,7 +210,7 @@ ETag: "6ad203d9-8185"
 Accept-Ranges: bytes
 ```
 
-Con este último paso, ya podremos ver la documentación generada con Zensical y servida por NGINX al abrir `http://localhost` en nuestro navegador. 
+Con este último paso, ya podremos ver la documentación generada con Zensical y servida por NGINX al abrir `http://localhost/zensical/` en nuestro navegador. 
 
 ---
 
@@ -234,7 +242,7 @@ cd blog
 bundle install
 ```
 
-A continuación, personalizaremos `blog/_config.yml` (título, descripción, autor):
+A continuación, personalizaremos `blog/_config.yml` (título, descripción, autor). Además, como el blog se publicará bajo la ruta `/blog/`, indicamos esa subruta en `baseurl` para que Jekyll genere bien los enlaces y la ruta del CSS:
 
 ```
 title: Mi primer blog
@@ -242,6 +250,8 @@ email: alumno@example.com
 description: >-
   Mi blog personal sobre desarrollo web.
 author: Alumno
+baseurl: "/blog"
+url: "http://localhost"
 ```
 
  y añadiremos al menos una entrada propia en `blog/_posts/` con el formato `AAAA-MM-DD-titulo.md`:
@@ -279,7 +289,7 @@ Jekyll deja el resultado en `blog/_site/`.
 
 ### 4. Publicar el blog en el mismo NGINX
 
-Añadiremos un segundo `server` al mismo NGINX, de modo que cada sitio se sirva de forma independiente según el nombre de host (`localhost` para la documentación y `blog.local` para el blog).
+Ampliaremos la configuración anterior con un segundo `location` en el mismo `server` de NGINX, de modo que cada sitio se sirva de forma independiente según la ruta (`/zensical/` para la documentación y `/blog/` para el blog).
 
 Primero, copiaremos el sitio generado y ajustaremos permisos:
 
@@ -289,34 +299,38 @@ sudo cp -r blog/_site/. /var/www/blog/
 sudo chown -R www-data:www-data /var/www/blog
 ```
 
-Luego, crearemos `nginx/blog.conf` en el repositorio:
+Luego, ampliaremos `nginx/practica.conf` en el repositorio:
 
 ```bash
-cd nginx  # ya está creada
-nano nginx/blog.conf
+nano nginx/practica.conf
 ```
 
-Dentro de `blog.conf` pegamos:
+Dejamos el fichero `practica.conf` así, con el nuevo `location` del blog:
 
 ```
 server {
     listen 80;
-    server_name blog.local;
+    server_name localhost;
 
-    root /var/www/blog;
-    index index.html;
+    location = /zensical { return 301 /zensical/; }
+    location = /blog     { return 301 /blog/; }
 
-    location / {
-        try_files $uri $uri/ =404;
+    location /zensical/ {
+        alias /var/www/zensical/;
+        index index.html;
+    }
+
+    location /blog/ {
+        alias /var/www/blog/;
+        index index.html;
     }
 }
 ```
 
-Por último, instalamos, validamos y recargamos:
+Por último, copiamos la configuración actualizada, validamos y recargamos (el enlace simbólico en `sites-enabled` ya existe, así que no hace falta crearlo de nuevo):
 
 ```bash
-sudo cp nginx/blog.conf /etc/nginx/sites-available/blog.conf
-sudo ln -s /etc/nginx/sites-available/blog.conf /etc/nginx/sites-enabled/blog.conf
+sudo cp nginx/practica.conf /etc/nginx/sites-available/practica.conf
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -333,11 +347,11 @@ nginx: configuration file /etc/nginx/nginx.conf test is successful
 Verificaremos que cada URL sirve su propio contenido en el mismo NGINX:
 
 ```bash
-curl -s http://localhost/ | grep -m1 -i "<title>"
-curl -s -H "Host: blog.local" http://localhost/ | grep -m1 -i "<title>"
+curl -s http://localhost/zensical/ | grep -m1 -i "<title>"
+curl -s http://localhost/blog/ | grep -m1 -i "<title>"
 ```
 
-Los dos `<title>` deben ser distintos: el de la documentación y el del blog. Para abrir el blog en el navegador, añadiremos `127.0.0.1 blog.local` a `/etc/hosts` y visitaremos `http://blog.local`; la documentación sigue en `http://localhost`.
+Los dos `<title>` deben ser distintos: el de la documentación y el del blog. Para verlos en el navegador, abriremos `http://localhost/zensical/` para la documentación y `http://localhost/blog/` para el blog.
 
 **Resultado:**
 
@@ -357,9 +371,9 @@ Cuando se quita una página de la documentación no basta con borrar el fichero 
 |-------|--------------|------|
 | Repositorio | Los Markdown originales | `docs/` |
 | Sitio generado | El HTML que crea Zensical | `site/` |
-| NGINX | La copia que ve el navegador | `/var/www/docs/` |
+| NGINX | La copia que ve el navegador | `/var/www/zensical/` |
 
-Si solo se borra el Markdown, la web no cambia: `site/` y `/var/www/docs/` conservan las páginas antiguas. Por eso el proceso se hace en tres pasos.
+Si solo se borra el Markdown, la web no cambia: `site/` y `/var/www/zensical/` conservan las páginas antiguas. Por eso el proceso se hace en tres pasos.
 
 ### 1. Quitar la página del menú
 
@@ -386,13 +400,13 @@ uv run zensical build
 ### 3. Vaciar y volver a publicar en NGINX
 
 ```bash
-sudo rm -rf /var/www/docs/*
-sudo cp -r site/. /var/www/docs/
-sudo chown -R www-data:www-data /var/www/docs
+sudo rm -rf /var/www/zensical/*
+sudo cp -r site/. /var/www/zensical/
+sudo chown -R www-data:www-data /var/www/zensical
 ```
 
-- `rm -rf /var/www/docs/*` vacía la carpeta que sirve NGINX, porque `cp -r` solo añade y sobrescribe ficheros, nunca elimina los que ya no existen. Sin este paso, las páginas borradas seguirían accesibles desde el navegador.
-- `cp -r site/. /var/www/docs/` copia el sitio nuevo. La barra y el punto (`/.`) copian también los ficheros ocultos y evitan crear una subcarpeta `site` dentro del destino.
+- `rm -rf /var/www/zensical/*` vacía la carpeta que sirve NGINX, porque `cp -r` solo añade y sobrescribe ficheros, nunca elimina los que ya no existen. Sin este paso, las páginas borradas seguirían accesibles desde el navegador.
+- `cp -r site/. /var/www/zensical/` copia el sitio nuevo. La barra y el punto (`/.`) copian también los ficheros ocultos y evitan crear una subcarpeta `site` dentro del destino.
 - `chown -R www-data:www-data` devuelve la propiedad al usuario con el que se ejecuta NGINX. Los ficheros copiados con `sudo` pertenecen a `root`, y sin este paso NGINX podría responder con un error 403.
 
 <br>
@@ -402,16 +416,16 @@ sudo chown -R www-data:www-data /var/www/docs
 ```bash
 rm -rf site
 uv run zensical build
-sudo rm -rf /var/www/docs/*
-sudo cp -r site/. /var/www/docs/
-sudo chown -R www-data:www-data /var/www/docs
+sudo rm -rf /var/www/zensical/*
+sudo cp -r site/. /var/www/zensical/
+sudo chown -R www-data:www-data /var/www/zensical
 ```
 
 ### 4. Comprobación
 
 ```bash
-ls /var/www/docs
-curl -I http://localhost
+ls /var/www/zensical
+curl -I http://localhost/zensical/
 ```
 
 **Resultado:**
@@ -431,7 +445,7 @@ Accept-Ranges: bytes
 Para confirmar que una página eliminada ya no existe, se pide su dirección y debe devolver un 404:
 
 ```bash
-curl -I http://localhost/tema-visual/
+curl -I http://localhost/zensical/tema-visual/
 ```
 
 **Resultado:**
@@ -532,7 +546,7 @@ sudo chown -R www-data:www-data /var/www/blog
 
 ```bash
 ls /var/www/blog
-curl -I -H "Host: blog.local" http://localhost
+curl -I http://localhost/blog/
 ```
 
 **Resultado:**
@@ -552,7 +566,7 @@ Accept-Ranges: bytes
 Para confirmar que una entrada eliminada ya no existe, se pide su dirección y debe devolver un 404:
 
 ```bash
-curl -I -H "Host: blog.local" http://localhost/resenas/2026/10/08/1984-george-orwell.html
+curl -I http://localhost/blog/resenas/2026/10/08/1984-george-orwell.html
 ```
 
 **Resultado:**
@@ -569,7 +583,7 @@ Connection: keep-alive
 También se puede comprobar que su título ya no aparece en la portada (debe devolver `0`):
 
 ```bash
-curl -s -H "Host: blog.local" http://localhost/ | grep -ci "Welcome"
+curl -s http://localhost/blog/ | grep -ci "Welcome"
 ```
 
 

@@ -7,8 +7,8 @@ author: Alumno
 lang: es
 timezone: Atlantic/Canary
 
-baseurl: "" # subruta del sitio; vacío porque el blog se sirve desde la raíz
-url: ""     # protocolo y dominio; vacío en local
+baseurl: "/blog"
+url: "http://localhost"
 
 # Tema y plugins
 theme: minima
