@@ -594,3 +594,9 @@ Si el navegador sigue mostrando la versión anterior, se recarga sin caché con 
 ## Blog final:
 
 ![](img/Blog.png)
+
+<br>
+
+---
+
+**Enlace al repo:** https://github.com/Atthemyg/DPL-2DAM/tree/main/practica-zensical-jekyll
