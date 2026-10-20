@@ -1,0 +1,1 @@
+## La «máquina remota» de ejemplo: un contenedor Debian
