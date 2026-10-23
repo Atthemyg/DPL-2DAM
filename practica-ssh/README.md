@@ -267,3 +267,22 @@ Ejecútaremos desde el equipo, no desde el contenedor. Debe fallar con `Permissi
 ![Intento de conexión con contraseña](img/17.png)
 
 ---
+
+## 8. Apagar y borrar la máquina de ejemplo
+
+```bash
+docker stop maquina-debian
+docker rm -f maquina-debian
+```
+
+![Contenedor detenido y eliminado](img/18.png)
+
+Si queremos crearla de nuevo, borraremos la huella antigua (la máquina nueva tendrá claves de host nuevas):
+
+```bash
+ssh-keygen -R "[127.0.0.1]:2222"
+```
+
+![Eliminación de la huella antigua de known_hosts](img/19.png)
+
+---
