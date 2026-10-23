@@ -187,3 +187,59 @@ Esta vez no debe pedir contraseña.
 El argumento `-i`, indica qué clave privada usar. Si está en la ruta por defecto podemos omitirlo.
 
 ---
+
+## 6. Deshabilitar el acceso por contraseña
+
+Ahora que la clave funciona, quitamos la entrada con contraseña. Este cambio se hace **en la máquina remota**.
+
+IMPORTANTE: **No hay que cerrar la sesión SSH ni la consola**. Las mantendremos abiertas ambas hasta probarlo todo en otra terminal. Si algo sale mal, desde ellas podremos revertirlo.
+
+### 6.1. Escribir la configuración
+
+Creamos un archivo en `/etc/ssh/sshd_config.d/`, que Debian incluye automáticamente:
+
+```bash
+sudo tee /etc/ssh/sshd_config.d/00-no-password.conf > /dev/null <<'EOF'
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+ChallengeResponseAuthentication no
+PermitEmptyPasswords no
+EOF
+```
+
+![Creación del archivo de configuración](img/13.png)
+
+| Directiva | Qué hace |
+|---|---|
+| `PubkeyAuthentication yes` | Permite entrar con clave pública |
+| `PasswordAuthentication no` | Desactiva la contraseña |
+| `KbdInteractiveAuthentication no` | Desactiva la autenticación interactiva |
+| `ChallengeResponseAuthentication no` | Nombre antiguo de la anterior (compatibilidad) |
+| `PermitEmptyPasswords no` | Prohíbe cuentas sin contraseña |
+
+
+IMPORTANTE: El nombre del archivo importa. Los archivos de `sshd_config.d` se leen en orden alfabético y gana el primero que define una opción. Con el prefijo `00-` nuestro archivo se impone a cualquier otro (muchas VPS traen un `50-cloud-init.conf` que puede reactivar la contraseña).
+
+### 6.2. Validar y recargar
+
+```bash
+sudo sshd -t
+sudo service ssh reload
+```
+
+Si `sshd -t` no muestra nada, no hay errores. Al recargar, el contenedor responde `Reloading OpenBSD Secure Shell server's configuration: sshd.` y las conexiones abiertas no se cortan.
+
+![Validación y recarga del servicio](img/14.png)
+
+### 6.3. Comprobar la configuración efectiva
+
+```bash
+sudo sshd -T | grep -E 'passwordauthentication|pubkeyauthentication|kbdinteractiveauthentication|permitemptypasswords'
+```
+
+Debe aparecer `passwordauthentication no` y `pubkeyauthentication yes`.
+
+![Configuración efectiva de sshd](img/15.png)
+
+---
