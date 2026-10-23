@@ -243,3 +243,27 @@ Debe aparecer `passwordauthentication no` y `pubkeyauthentication yes`.
 ![Configuración efectiva de sshd](img/15.png)
 
 ---
+
+## 7. Probar la nueva conexión
+
+Sin cerrar la sesión actual, abriremos otra terminal y entraremos con la clave:
+
+```bash
+ssh -i ~/.ssh/id_ed25519 -p 2222 usuario@127.0.0.1
+```
+
+Debe entrar directo, sin contraseña.
+
+![Conexión con clave tras deshabilitar la contraseña](img/16.png)
+
+Ahora la prueba definitiva: forzar un intento con contraseña.
+
+```bash
+ssh -o PubkeyAuthentication=no -p 2222 usuario@127.0.0.1
+```
+
+Ejecútaremos desde el equipo, no desde el contenedor. Debe fallar con `Permission denied (publickey)`. Ese error es la buena noticia: la máquina ya solo acepta claves.
+
+![Intento de conexión con contraseña](img/17.png)
+
+---
