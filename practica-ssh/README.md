@@ -73,3 +73,25 @@ IMPORTANTE: ¿Por qué hay que arrancarlo a mano? En una Debian normal el servic
 | Recargar configuración | `sudo systemctl reload ssh` | `service ssh reload` |
 
 ---
+
+## 3. Crear un usuario
+
+No nos conectaremos como `root`: Debian lo impide por defecto con contraseña y es más seguro usar un usuario normal.
+
+```bash
+adduser usuario
+```
+
+Pide una contraseña (dos veces) y algunos datos opcionales que dejaremos vacíos con Enter. Al final confirmamos con `Y`.
+
+![Creación del usuario](img/6.png)
+
+Le daremos permisos de administración:
+
+```bash
+adduser usuario sudo
+```
+
+![Usuario añadido al grupo sudo](img/7.png)
+
+---
