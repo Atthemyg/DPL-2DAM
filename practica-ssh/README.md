@@ -39,3 +39,37 @@ cat /etc/os-release
 IMPORTANTE: Necesitamos un acceso rescate. Dejaremos esta terminal abierta. Es como tener acceso físico a la máquina: aunque el SSH falle, desde aquí siempre podremos arreglarlo.
 
 ---
+
+## 2. Instalar y arrancar el servidor SSH
+
+Dentro de la consola del contenedor:
+
+```bash
+apt update
+apt install openssh-server sudo
+```
+
+Pulsaremos Enter cuando pregunte `Do you want to continue?`.
+
+![Instalación de openssh-server y sudo](img/3.png)
+
+Arrancamos el servicio y comprobamos su estado:
+
+```bash
+service ssh start
+service ssh status
+```
+
+Debe responder `sshd is running.`
+
+![Servicio SSH arrancado](img/4.png)
+
+IMPORTANTE: ¿Por qué hay que arrancarlo a mano? En una Debian normal el servicio arranca solo al instalarse. En el contenedor no hay `systemd` y Docker impide que `apt` arranque servicios, así que se hace manualmente.
+
+| Acción | Máquina real (systemd) | Contenedor |
+|---|---|---|
+| Arrancar | `sudo systemctl start ssh` | `service ssh start` |
+| Ver estado | `sudo systemctl status ssh` | `service ssh status` |
+| Recargar configuración | `sudo systemctl reload ssh` | `service ssh reload` |
+
+---
