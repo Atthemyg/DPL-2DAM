@@ -82,7 +82,11 @@ No nos conectaremos como `root`: Debian lo impide por defecto con contraseña y 
 adduser usuario
 ```
 
-Pide una contraseña (dos veces) y algunos datos opcionales que dejaremos vacíos con Enter. Al final confirmamos con `Y`.
+Lo primero que pide es la contraseña del nuevo usuario:
+
+![Petición de la contraseña del usuario](img/5.png)
+
+Pide la contraseña (dos veces) y algunos datos opcionales que dejaremos vacíos con Enter. Al final confirmamos con `Y`.
 
 ![Creación del usuario](img/6.png)
 
@@ -104,7 +108,7 @@ Abriremos **otra terminal en el equipo** (dejamos la del contenedor abierta):
 ssh -p 2222 usuario@127.0.0.1
 ```
 
-La primera vez SSH pregunta si confíamos en la máquina: responderemos `yes`. Su huella se guarda en `~/.ssh/known_hosts`, y en las siguientes conexiones SSH la compara para avisarnos si alguien se hace pasar por ella. Después pedimos la contraseña del usuario:
+La primera vez SSH pregunta si confiamos en la máquina: responderemos `yes`. Su huella se guarda en `~/.ssh/known_hosts`, y en las siguientes conexiones SSH la compara para avisarnos si alguien se hace pasar por ella. Después pedimos la contraseña del usuario:
 
 ![Primera conexión con contraseña](img/8.png)
 
@@ -262,7 +266,7 @@ Ahora la prueba definitiva: forzar un intento con contraseña.
 ssh -o PubkeyAuthentication=no -p 2222 usuario@127.0.0.1
 ```
 
-Ejecútaremos desde el equipo, no desde el contenedor. Debe fallar con `Permission denied (publickey)`. Ese error es la buena noticia: la máquina ya solo acepta claves.
+Ejecutaremos desde el equipo, no desde el contenedor. Debe fallar con `Permission denied (publickey)`. Ese error es la buena noticia: la máquina ya solo acepta claves.
 
 ![Intento de conexión con contraseña](img/17.png)
 
