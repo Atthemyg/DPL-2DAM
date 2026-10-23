@@ -95,3 +95,29 @@ adduser usuario sudo
 ![Usuario añadido al grupo sudo](img/7.png)
 
 ---
+
+## 4. Primera conexión (con contraseña)
+
+Abriremos **otra terminal en el equipo** (dejamos la del contenedor abierta):
+
+```bash
+ssh -p 2222 usuario@127.0.0.1
+```
+
+La primera vez SSH pregunta si confíamos en la máquina: responderemos `yes`. Su huella se guarda en `~/.ssh/known_hosts`, y en las siguientes conexiones SSH la compara para avisarnos si alguien se hace pasar por ella. Después pedimos la contraseña del usuario:
+
+![Primera conexión con contraseña](img/8.png)
+
+Comprobamos dónde está y salimos:
+
+```bash
+whoami
+hostname
+exit
+```
+
+![Comprobación de la sesión](img/9.png)
+
+En una VPS real el comando sería `ssh usuario@IP_DE_LA_VPS` (sin `-p`, el puerto por defecto ya es el 22). Si no conecta, hay que revisar que el cortafuegos del proveedor permita el puerto 22.
+
+---
