@@ -121,3 +121,69 @@ exit
 En una VPS real el comando sería `ssh usuario@IP_DE_LA_VPS` (sin `-p`, el puerto por defecto ya es el 22). Si no conecta, hay que revisar que el cortafuegos del proveedor permita el puerto 22.
 
 ---
+
+## 5. Autenticación con clave pública
+
+Las contraseñas se pueden adivinar o robar. La alternativa es un **par de claves**: la privada no sale nunca del equipo y la pública se copia a la máquina remota. Esto se hace en **nuestro equipo**, no en el contenedor.
+
+### 5.1. Comprobar si ya tenemos una clave
+
+```bash
+ls -la ~/.ssh
+```
+
+Buscaremos `id_ed25519` (privada) e `id_ed25519.pub` (pública). Si ya existen, podemos reutilizarlas y saltar al apartado 5.3.
+
+![Contenido de ~/.ssh con una clave ya creada](img/10.png)
+
+### 5.2. Crear el par de claves
+
+Si no tenemos ninguna:
+
+```bash
+ssh-keygen -t ed25519 -C "tu_correo@ejemplo.com"
+```
+
+- `-t ed25519`: tipo de clave (moderno, corto y seguro).
+- `-C`: comentario para identificarla (normalmente tu email). Opcional.
+
+Nos hará tres preguntas: dónde guardarla (Enter para la ruta por defecto), una "passphrase" (opcional, pero recomendada) y repetirla. Se crean dos archivos en `~/.ssh`:
+
+| Archivo | Qué es | ¿Se comparte? |
+|---|---|---|
+| `id_ed25519` | Clave **privada**. Secreta. | **Nunca** |
+| `id_ed25519.pub` | Clave **pública**. Se copia al servidor. | Sí |
+
+IMPORTANTE: Nunca hay que compartir la clave privada. Si la pegas por error en un chat, correo o repositorio, considérala comprometida: bórrala y genera un par nuevo.
+
+SSH es estricto con los permisos. Si algo falla, ajústalos:
+
+```bash
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/id_ed25519
+chmod 644 ~/.ssh/id_ed25519.pub
+```
+
+### 5.3. Copiar la clave pública a la máquina
+
+```bash
+ssh-copy-id -i ~/.ssh/id_ed25519.pub -p 2222 usuario@127.0.0.1
+```
+
+Pedirá la contraseña por última vez. La clave pública acaba en `~/.ssh/authorized_keys` de la máquina.
+
+![Copia de la clave pública con ssh-copy-id](img/11.png)
+
+### 5.4. Probar la clave
+
+```bash
+ssh -i ~/.ssh/id_ed25519 -p 2222 usuario@127.0.0.1
+```
+
+Esta vez no debe pedir contraseña.
+
+![Conexión con clave, sin contraseña](img/12.png)
+
+El argumento `-i`, indica qué clave privada usar. Si está en la ruta por defecto podemos omitirlo.
+
+---
