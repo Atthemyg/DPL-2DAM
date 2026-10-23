@@ -286,3 +286,20 @@ ssh-keygen -R "[127.0.0.1]:2222"
 ![Eliminación de la huella antigua de known_hosts](img/19.png)
 
 ---
+
+## 9. Solución de problemas
+
+| Problema | Qué hacer |
+|---|---|
+| `Connection refused` | El SSH no está arrancado o el puerto no está publicado. Dentro de la máquina: `service ssh status`. En el equipo: `docker port maquina-debian` |
+| `REMOTE HOST IDENTIFICATION HAS CHANGED!` | Recreaste el contenedor. Ejecuta `ssh-keygen -R "[127.0.0.1]:2222"` |
+| `Permission denied (publickey)` con la clave | La clave no está en `authorized_keys` o los permisos son incorrectos (`chmod 700 ~/.ssh` y `chmod 600 ~/.ssh/authorized_keys`). Usa `ssh -v` para ver qué claves prueba el cliente |
+| La contraseña sigue funcionando | Revisa el orden de los archivos de `sshd_config.d` y comprueba con `sudo sshd -T \| grep passwordauthentication` |
+| `sshd -t` muestra errores | Corrígelos antes de recargar: una errata puede dejar el servidor sin arrancar |
+| El puerto 2222 está ocupado | Usa otro, por ejemplo `-p 2223:22`, y conecta con `-p 2223` |
+
+---
+
+<br>
+
+**Enlace al repo:** https://github.com/Atthemyg/DPL-2DAM/tree/main/practica-ssh
